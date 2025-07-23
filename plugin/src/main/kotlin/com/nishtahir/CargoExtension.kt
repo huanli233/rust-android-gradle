@@ -6,6 +6,7 @@ import org.gradle.api.Project
 import org.gradle.process.ExecSpec
 import java.io.File
 import java.util.*
+import javax.inject.Inject
 
 sealed class Features {
     class All() : Features()
@@ -30,20 +31,23 @@ data class FeatureSpec(var features: Features? = null) {
 }
 
 // `CargoExtension` is documented in README.md.
-open class CargoExtension {
+open class CargoExtension @Inject constructor(private val project: Project) {
     lateinit var localProperties: Properties
 
     var module: String? = null
     var libname: String? = null
     var targets: List<String>? = null
     var prebuiltToolchains: Boolean? = null
-    var profile: String = "debug"
     var verbose: Boolean? = null
     var targetDirectory: String? = null
     var targetIncludes: Array<String>? = null
+    // ... other properties like `profile`, `verbose`, etc.
+    // The `profile` property is now set automatically from the variant,
+    // so its value here acts as a default for non-Android tasks.
+    var profile: String = "debug"
+    var extraCargoBuildArguments: List<String>? = null
     var apiLevel: Int? = null
     var apiLevels: Map<String, Int> = mapOf()
-    var extraCargoBuildArguments: List<String>? = null
     var generateBuildId: Boolean = false
 
     // It would be nice to use a receiver here, but there are problems interoperating with Groovy
